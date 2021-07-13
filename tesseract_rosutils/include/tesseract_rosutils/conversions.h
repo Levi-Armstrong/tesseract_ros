@@ -34,6 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 #include <tesseract_msgs/JointState.h>
+#include <tesseract_common/joint_state.h>
+#include <trajectory_msgs/JointTrajectory.h>
 #include <tesseract_command_language/core/instruction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -74,6 +76,9 @@ bool toCSVFile(const std::vector<tesseract_msgs::JointState>& trajectory_msg,
  * @return Joint Trajectory
  */
 std::vector<tesseract_msgs::JointState> trajectoryFromCSVFile(const std::string& file_path, char separator = ',');
+
+trajectory_msgs::JointTrajectory toRosJointTrajectory(tesseract_common::JointTrajectory joint_trajectory, tesseract_common::JointState initial_state);
+
 
 }  // namespace tesseract_rosutils
 #endif  // TESSERACT_ROSUTILS_CONVERSIONS_H

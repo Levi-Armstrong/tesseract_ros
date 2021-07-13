@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/flatten_utils.h>
+#include <map>
 
 namespace tesseract_rosutils
 {
@@ -141,5 +142,35 @@ std::vector<tesseract_msgs::JointState> trajectoryFromCSVFile(const std::string&
 
   return trajectory;
 }
+
+trajectory_msgs::JointTrajectory toRosJointTrajectory(tesseract_common::JointTrajectory joint_trajectory, tesseract_common::JointState initial_state){
+  trajectory_msgs::JointTrajectory result;
+  std::vector<std::string> joint_names;
+  joint_names = initial_state.joint_names;
+  result.joint_names = joint_names;
+  std::map<std::string, int> joint_names_indices;
+  for (unsigned long i=0; i < joint_names.size(); i++){
+    joint_names_indices.insert({joint_names[i],i});
+  }
+  std::vector<double> last_trajectory = std::vector<double> (initial_state.position.data(), initial_state.position.data() + initial_state.position.rows() * initial_state.position.cols());
+  std::vector<trajectory_msgs::JointTrajectoryPoint> points;
+  for (unsigned long i=0; i < joint_trajectory.size(); i++){
+    trajectory_msgs::JointTrajectoryPoint current_point;
+    current_point.positions = last_trajectory;
+    current_point.velocities = std::vector<double> (joint_names.size(), 0);
+    current_point.accelerations = std::vector<double> (joint_names.size(), 0);
+    current_point.effort = std::vector<double> (joint_names.size(), 0);
+    current_point.time_from_start = ros::Duration (joint_trajectory[i].time);
+    for (unsigned long j=0; j < joint_trajectory[i].joint_names.size(); j++){
+        current_point.positions[joint_names_indices[joint_trajectory[i].joint_names[j]]] = joint_trajectory[i].position[j];
+    }
+    last_trajectory = current_point.positions;
+    points.push_back(current_point);
+  }
+  return result;
+
+}
+
+
 
 }  // namespace tesseract_rosutils
